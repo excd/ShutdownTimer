@@ -1,6 +1,6 @@
 # Shutdown Timer
 
-[![Build and Release](https://github.com/excd/ShutdownTimer/actions/workflows/build-release.yml/badge.svg?branch=main)](https://github.com/excd/ShutdownTimer/actions/workflows/build-release.yml)
+[![Build and Release](https://github.com/excd/ShutdownTimer/actions/workflows/build-release.yml/badge.svg)](https://github.com/excd/ShutdownTimer/actions/workflows/build-release.yml)
 
 A lightweight and standalone Windows desktop app with a GUI that lets you easily schedule a timed system shutdown.
 
