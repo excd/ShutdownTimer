@@ -1,0 +1,63 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Read assembly version
+        id: version
+        shell: pwsh
+        run: |
+          $assemblyInfoPath = Join-Path $env:GITHUB_WORKSPACE 'ShutdownTimer\Properties\AssemblyInfo.cs'
+          $content = Get-Content $assemblyInfoPath -Raw
+          $match = [regex]::Match($content, '\[assembly: AssemblyVersion\("(?<version>[^\"]+)"\)\]')
+          if (-not $match.Success) {
+            throw 'AssemblyVersion attribute not found.'
+          }
+          $version = $match.Groups['version'].Value
+          Write-Output "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: nuget restore ShutdownTimer.sln
+
+      - name: Build solution in Release mode
+        shell: pwsh
+        run: msbuild ShutdownTimer.sln /p:Configuration=Release /p:Platform="Any CPU" /m
+
+      - name: Prepare release executable
+        shell: pwsh
+        run: |
+          $src = Join-Path $env:GITHUB_WORKSPACE 'ShutdownTimer\bin\Release\ShutdownTimer.exe'
+          $dest = Join-Path $env:GITHUB_WORKSPACE 'ShutdownTimer.exe'
+          Copy-Item -Path $src -Destination $dest -Force
+          Write-Output "Prepared $dest"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShutdownTimer-${{ steps.version.outputs.version }}
+          path: ShutdownTimer.exe
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Shutdown Timer v${{ steps.version.outputs.version }}
+          files: ShutdownTimer.exe
+          generate_release_notes: true
+          draft: false
+          prerelease: false
