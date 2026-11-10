@@ -4,6 +4,8 @@
 
 A lightweight and standalone Windows desktop app with a GUI that lets you easily schedule a timed system shutdown.
 
+![Screenshot](images/screenshot.png)
+
 ## Features
 
 - Choose from preset shutdown durations or define a custom timer.
